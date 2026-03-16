@@ -1,0 +1,12 @@
+{
+  "hostTransforms": {
+    "android": {
+      "templateDir": "android/templates",
+      "replaceTemplateProvider": true
+    },
+    "ios": {
+      "templateDir": "ios/templates",
+      "injectViewControllers": ["ViewController"]
+    }
+  }
+}
