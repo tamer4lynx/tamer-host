@@ -12,7 +12,7 @@ Production Lynx host templates for injecting LynxView into existing Android and 
 ## Installation
 
 ```bash
-npm install tamer-host
+npm install @tamer4lynx/tamer-host
 ```
 
 ## Usage
