@@ -1,10 +1,17 @@
 {
   "name": "@tamer4lynx/tamer-host",
-  "version": "0.0.1",
-  "publishConfig": { "access": "public", "tag": "prerelease" },
+  "version": "0.0.2",
+  "publishConfig": {
+    "access": "public",
+    "tag": "prerelease"
+  },
   "type": "module",
   "description": "Production Lynx host templates for injecting LynxView into existing apps",
-  "files": ["android/templates", "ios", "lynx.ext.json"],
+  "files": [
+    "android/templates",
+    "ios",
+    "lynx.ext.json"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/tamer4lynx/tamer-host.git"
