@@ -50,6 +50,7 @@ class ViewController: UIViewController {
   private func setupLynxView() {
     let lv = buildLynxView()
     view.addSubview(lv)
+    TamerInsetsModule.attachHostView(lv)
     lv.loadTemplate(fromURL: "main.lynx.bundle", initData: nil)
     self.lynxView = lv
   }
