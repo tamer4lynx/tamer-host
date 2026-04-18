@@ -42,6 +42,10 @@ t4l android inject --force
 
 `t4l android create` and `t4l ios create` use `tamer-host` templates when the package is installed. If `tamer-host` is not installed, the CLI falls back to inline templates.
 
+## DevTools long-press menu
+
+The Lynx runtime can show a long-press DevTools menu. **tamer-dev-app** disables it at startup and uses a shake gesture + custom debug panel instead (see `tamer-dev-client`). For **production** hosts, choose explicitly: keep the default long-press behavior, or disable it the same way if you ship your own debug entry point.
+
 ## Related
 
 - [tamer-dev-client](https://github.com/tamer4lynx/tamer-dev-client) — Adds dev launcher (QR scan, HMR) on top of the host

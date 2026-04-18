@@ -1,6 +1,7 @@
 package {{PACKAGE_NAME}}
 
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -15,6 +16,17 @@ import {{PACKAGE_NAME}}.generated.GeneratedActivityLifecycle
 class MainActivity : AppCompatActivity() {
     private var lynxView: LynxView? = null
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val backCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            GeneratedActivityLifecycle.onBackPressed { consumed ->
+                if (!consumed) {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         GeneratedLynxExtensions.onHostViewChanged(lynxView)
         lynxView?.renderTemplateUrl("main.lynx.bundle", "")
         GeneratedActivityLifecycle.onCreateDelayed(handler)
+        onBackPressedDispatcher.addCallback(this, backCallback)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -54,15 +67,6 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         GeneratedActivityLifecycle.onResume()
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        GeneratedActivityLifecycle.onBackPressed { consumed ->
-            if (!consumed) {
-                runOnUiThread { super.onBackPressed() }
-            }
-        }
     }
 
     override fun onDestroy() {

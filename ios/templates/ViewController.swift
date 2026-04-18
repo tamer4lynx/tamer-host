@@ -1,6 +1,7 @@
 import UIKit
 import Lynx
 import tamerinsets
+import tamerrouter
 
 class ViewController: UIViewController {
   private var lynxView: LynxView?
@@ -51,6 +52,7 @@ class ViewController: UIViewController {
     let lv = buildLynxView()
     view.addSubview(lv)
     TamerInsetsModule.attachHostView(lv)
+    TamerRouterNativeModule.attachHostView(lv)
     lv.loadTemplate(fromURL: "main.lynx.bundle", initData: nil)
     self.lynxView = lv
   }
