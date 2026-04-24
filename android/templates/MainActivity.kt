@@ -10,6 +10,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.updatePadding
 import com.lynx.tasm.LynxView
 import com.lynx.tasm.LynxViewBuilder
+import com.nanofuxion.tamernavigation.stack.TamerNavHost
 import {{PACKAGE_NAME}}.generated.GeneratedLynxExtensions
 import {{PACKAGE_NAME}}.generated.GeneratedActivityLifecycle
 
@@ -30,6 +31,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        TamerNavHost.spokeBuilder = { ctx ->
+            val vb = LynxViewBuilder()
+            vb.setTemplateProvider(TemplateProvider(ctx))
+            GeneratedLynxExtensions.configureViewBuilder(vb)
+            vb.build(ctx)
+        }
         GeneratedActivityLifecycle.onCreate(intent)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true

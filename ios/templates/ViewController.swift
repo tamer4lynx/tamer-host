@@ -2,6 +2,9 @@ import UIKit
 import Lynx
 import tamerinsets
 import tamerrouter
+#if canImport(tamernavigation)
+import tamernavigation
+#endif
 
 class ViewController: UIViewController {
   private var lynxView: LynxView?
@@ -53,6 +56,9 @@ class ViewController: UIViewController {
     view.addSubview(lv)
     TamerInsetsModule.attachHostView(lv)
     TamerRouterNativeModule.attachHostView(lv)
+#if canImport(tamernavigation)
+    TamerNavHost.attachRoot(lv, presenter: self)
+#endif
     lv.loadTemplate(fromURL: "main.lynx.bundle", initData: nil)
     self.lynxView = lv
   }
