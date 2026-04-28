@@ -8,6 +8,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.updatePadding
+import com.lynx.tasm.LynxBooleanOption
+import com.lynx.tasm.LynxGroup
 import com.lynx.tasm.LynxView
 import com.lynx.tasm.LynxViewBuilder
 import com.nanofuxion.tamernavigation.stack.TamerNavHost
@@ -15,6 +17,13 @@ import {{PACKAGE_NAME}}.generated.GeneratedLynxExtensions
 import {{PACKAGE_NAME}}.generated.GeneratedActivityLifecycle
 
 class MainActivity : AppCompatActivity() {
+    private val tamerNavSharedLynxGroup: LynxGroup by lazy {
+        LynxGroup.LynxGroupBuilder()
+            .setGroupName("TamerNav")
+            .setID("tamer-nav-shared")
+            .build()
+    }
+
     private var lynxView: LynxView? = null
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private val backCallback = object : OnBackPressedCallback(true) {
@@ -33,7 +42,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         TamerNavHost.spokeBuilder = { ctx ->
             val vb = LynxViewBuilder()
-            vb.setTemplateProvider(TemplateProvider(ctx))
+            vb.setLynxGroup(tamerNavSharedLynxGroup)
+            val provider = TemplateProvider(ctx)
+            vb.setTemplateProvider(provider)
+            vb.setEnableGenericResourceFetcher(LynxBooleanOption.TRUE)
+            vb.setTemplateResourceFetcher(provider.templateResourceFetcher)
+            vb.setGenericResourceFetcher(provider.genericResourceFetcher)
             GeneratedLynxExtensions.configureViewBuilder(vb)
             vb.build(ctx)
         }
@@ -86,7 +100,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildLynxView(): LynxView {
         val viewBuilder = LynxViewBuilder()
-        viewBuilder.setTemplateProvider(TemplateProvider(this))
+        viewBuilder.setLynxGroup(tamerNavSharedLynxGroup)
+        val provider = TemplateProvider(this)
+        viewBuilder.setTemplateProvider(provider)
+        viewBuilder.setEnableGenericResourceFetcher(LynxBooleanOption.TRUE)
+        viewBuilder.setTemplateResourceFetcher(provider.templateResourceFetcher)
+        viewBuilder.setGenericResourceFetcher(provider.genericResourceFetcher)
         GeneratedLynxExtensions.configureViewBuilder(viewBuilder)
         return viewBuilder.build(this)
     }
