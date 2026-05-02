@@ -20,7 +20,8 @@ class MainActivity : AppCompatActivity() {
     private val tamerNavSharedLynxGroup: LynxGroup by lazy {
         LynxGroup.LynxGroupBuilder()
             .setGroupName("TamerNav")
-            .setID("tamer-nav-shared")
+            .setID(LynxGroup.SINGNLE_GROUP)
+            .setEnableJSGroupThread(true)
             .build()
     }
 
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        TamerNavHost.configureSharedLynxGroup(tamerNavSharedLynxGroup)
         TamerNavHost.spokeBuilder = { ctx ->
             val vb = LynxViewBuilder()
             vb.setLynxGroup(tamerNavSharedLynxGroup)
