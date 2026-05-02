@@ -77,8 +77,16 @@ class ViewController: UIViewController {
 #if canImport(tamernavigation)
     TamerNavHost.attachRoot(lv, presenter: self)
 #endif
-    lv.loadTemplate(fromURL: "main.lynx.bundle", initData: nil)
+    lv.loadTemplate(fromURL: "main.lynx.bundle", initData: Self.initialDataWithInsetsSnapshot())
     self.lynxView = lv
+  }
+
+  /// Wraps the current safe-area insets in a `LynxTemplateData` so the JS bundle's
+  /// first React render reads real insets via `lynx.__initData.__tamerInsetsSnapshot`
+  /// instead of starting at zero and snapping when `tamer-insets:change` arrives.
+  private static func initialDataWithInsetsSnapshot() -> LynxTemplateData? {
+    guard let snapshot = TamerInsetsModule.currentInsetsSnapshotJson() else { return nil }
+    return LynxTemplateData(json: "{\"__tamerInsetsSnapshot\":\(snapshot)}")
   }
 
   private func applyFullscreenLayout(to lynxView: LynxView) {

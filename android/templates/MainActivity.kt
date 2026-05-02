@@ -12,6 +12,7 @@ import com.lynx.tasm.LynxBooleanOption
 import com.lynx.tasm.LynxGroup
 import com.lynx.tasm.LynxView
 import com.lynx.tasm.LynxViewBuilder
+import com.nanofuxion.tamerinsets.TamerInsetsModule
 import com.nanofuxion.tamernavigation.stack.TamerNavHost
 import {{PACKAGE_NAME}}.generated.GeneratedLynxExtensions
 import {{PACKAGE_NAME}}.generated.GeneratedActivityLifecycle
@@ -66,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         }
         GeneratedActivityLifecycle.onViewAttached(lynxView)
         GeneratedLynxExtensions.onHostViewChanged(lynxView)
-        lynxView?.renderTemplateUrl("main.lynx.bundle", "")
+        lynxView?.renderTemplateUrl("main.lynx.bundle", initialDataWithInsetsSnapshot())
         GeneratedActivityLifecycle.onCreateDelayed(handler)
         onBackPressedDispatcher.addCallback(this, backCallback)
     }
@@ -98,6 +99,14 @@ class MainActivity : AppCompatActivity() {
         lynxView?.destroy()
         lynxView = null
         super.onDestroy()
+    }
+
+    /** Wraps current safe-area insets in initData JSON so the JS bundle's first React
+     * render reads real insets via `lynx.__initData.__tamerInsetsSnapshot` instead of
+     * starting at zero and snapping when `tamer-insets:change` arrives. */
+    private fun initialDataWithInsetsSnapshot(): String {
+        val snapshot = TamerInsetsModule.currentInsetsSnapshotJson() ?: return ""
+        return "{\"__tamerInsetsSnapshot\":$snapshot}"
     }
 
     private fun buildLynxView(): LynxView {
