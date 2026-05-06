@@ -1,5 +1,6 @@
 package {{PACKAGE_NAME}}
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -12,20 +13,65 @@ import com.lynx.tasm.LynxBooleanOption
 import com.lynx.tasm.LynxGroup
 import com.lynx.tasm.LynxView
 import com.lynx.tasm.LynxViewBuilder
+import com.lynx.tasm.group.ILynxViewGroup
+import com.lynx.tasm.group.LynxViewGroupBuilder
+import com.lynx.xelement.XElementBehaviors
 import com.nanofuxion.tamerinsets.TamerInsetsModule
 import com.nanofuxion.tamernavigation.stack.TamerNavHost
 import {{PACKAGE_NAME}}.generated.GeneratedLynxExtensions
 import {{PACKAGE_NAME}}.generated.GeneratedActivityLifecycle
 
-class MainActivity : AppCompatActivity() {
-    private val tamerNavSharedLynxGroup: LynxGroup by lazy {
-        LynxGroup.LynxGroupBuilder()
-            .setGroupName("TamerNav")
-            .setID(LynxGroup.SINGNLE_GROUP)
-            .setEnableJSGroupThread(true)
-            .build()
+private object TamerNavLynxRuntime {
+    init {
+        android.util.Log.w(
+            "TamerHeap",
+            "Lynx does not share JS heap across LynxViews; module-singleton stores re-init per spoke. Use TamerStateSyncProvider from @tamer4lynx/tamer-router for cross-spoke continuity. See tamer-navigation README.",
+        )
     }
 
+    val group: LynxGroup = LynxGroup.LynxGroupBuilder()
+        .setGroupName("TamerNav")
+        .setID(LynxGroup.SINGNLE_GROUP)
+        .setEnableJSGroupThread(true)
+        .build()
+
+    private val viewGroups = LinkedHashMap<String, ILynxViewGroup>()
+
+    @Synchronized
+    fun viewGroup(context: Context, src: String): ILynxViewGroup {
+        val key = src.ifBlank { "main.lynx.bundle" }
+        return viewGroups.getOrPut(key) {
+            val appContext = context.applicationContext ?: context
+            val provider = TemplateProvider(appContext)
+            val groupBuilder = LynxViewGroupBuilder()
+                .setContext(appContext)
+                .setUrl(key)
+                .setLynxGroup(group)
+                .addBehaviors(XElementBehaviors().create())
+            groupBuilder.setEnableGenericResourceFetcher(LynxBooleanOption.TRUE)
+            groupBuilder.setTemplateResourceFetcher(provider.templateResourceFetcher)
+            groupBuilder.setGenericResourceFetcher(provider.genericResourceFetcher)
+            groupBuilder.build()
+        }
+    }
+
+    fun configureBuilder(context: Context, viewBuilder: LynxViewBuilder, src: String) {
+        val provider = TemplateProvider(context)
+        val vg = viewGroup(context, src)
+        viewBuilder.setLynxViewGroup(vg)
+        viewBuilder.setLynxGroup(group)
+        viewBuilder.setTemplateProvider(provider)
+        viewBuilder.setEnableGenericResourceFetcher(LynxBooleanOption.TRUE)
+        viewBuilder.setTemplateResourceFetcher(provider.templateResourceFetcher)
+        viewBuilder.setGenericResourceFetcher(provider.genericResourceFetcher)
+        android.util.Log.i(
+            "TamerHeap",
+            "configure src=$src group=${System.identityHashCode(group)} viewGroup=${System.identityHashCode(vg)}",
+        )
+    }
+}
+
+class MainActivity : AppCompatActivity() {
     private var lynxView: LynxView? = null
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private val backCallback = object : OnBackPressedCallback(true) {
@@ -42,15 +88,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        TamerNavHost.configureSharedLynxGroup(tamerNavSharedLynxGroup)
-        TamerNavHost.spokeBuilder = { ctx ->
+        TamerNavHost.configureSharedLynxGroup(TamerNavLynxRuntime.group)
+        TamerNavHost.sourceSpokeBuilder = { ctx, src ->
             val vb = LynxViewBuilder()
-            vb.setLynxGroup(tamerNavSharedLynxGroup)
-            val provider = TemplateProvider(ctx)
-            vb.setTemplateProvider(provider)
-            vb.setEnableGenericResourceFetcher(LynxBooleanOption.TRUE)
-            vb.setTemplateResourceFetcher(provider.templateResourceFetcher)
-            vb.setGenericResourceFetcher(provider.genericResourceFetcher)
+            TamerNavLynxRuntime.configureBuilder(ctx, vb, src)
             GeneratedLynxExtensions.configureViewBuilder(vb)
             vb.build(ctx)
         }
@@ -111,12 +152,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildLynxView(): LynxView {
         val viewBuilder = LynxViewBuilder()
-        viewBuilder.setLynxGroup(tamerNavSharedLynxGroup)
-        val provider = TemplateProvider(this)
-        viewBuilder.setTemplateProvider(provider)
-        viewBuilder.setEnableGenericResourceFetcher(LynxBooleanOption.TRUE)
-        viewBuilder.setTemplateResourceFetcher(provider.templateResourceFetcher)
-        viewBuilder.setGenericResourceFetcher(provider.genericResourceFetcher)
+        TamerNavLynxRuntime.configureBuilder(this, viewBuilder, "main.lynx.bundle")
         GeneratedLynxExtensions.configureViewBuilder(viewBuilder)
         return viewBuilder.build(this)
     }
